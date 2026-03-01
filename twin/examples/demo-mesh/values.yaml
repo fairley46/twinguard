@@ -1,0 +1,19 @@
+namespace: prod
+
+images:
+  frontend: nginx:1.27
+  api: nginx:1.27
+  db: postgres:16
+
+servicePorts:
+  frontend: 80
+  api: 8080
+  db: 5432
+
+ingress:
+  host: demo.local
+  className: nginx
+
+scenario:
+  exposeDbPublic: false
+  wildcardProdEgress: false

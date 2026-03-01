@@ -1,0 +1,20 @@
+{
+  "name": "@twin/api",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "analyze": "tsx src/cli.ts analyze",
+    "report": "tsx src/cli.ts report"
+  },
+  "dependencies": {
+    "@twin/core": "0.1.0",
+    "@twin/policy": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "tsx": "^4.20.5"
+  }
+}

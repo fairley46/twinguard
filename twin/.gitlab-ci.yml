@@ -1,0 +1,26 @@
+stages:
+  - twin
+
+twin_simulation:
+  stage: twin
+  image: alpine/helm:3.16.2
+  variables:
+    GIT_STRATEGY: fetch
+  before_script:
+    - apk add --no-cache nodejs npm git bash curl jq
+    - npm ci
+  script:
+    - bash scripts/render_compare.sh
+    - npm run analyze -- --baseline artifacts/baseline --candidate artifacts/candidate --out-dir artifacts --enforce=false
+    - bash scripts/post_mr_comment.sh artifacts/summary.md
+  artifacts:
+    when: always
+    paths:
+      - artifacts/analysis.json
+      - artifacts/summary.md
+      - artifacts/report.html
+      - artifacts/baseline/rendered.yaml
+      - artifacts/candidate/rendered.yaml
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
