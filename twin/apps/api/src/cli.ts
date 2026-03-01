@@ -7,6 +7,7 @@ import {
   parseManifestDir,
   toHtmlReport,
   toMarkdownSummary,
+  toSarifReport,
   type AnalysisResult,
 } from "@twin/core";
 import { evaluatePolicies } from "@twin/policy";
@@ -78,6 +79,7 @@ function runAnalyze(args: ArgMap): number {
   writeFileSync(join(outDir, "analysis.json"), JSON.stringify(result, null, 2), "utf8");
   writeFileSync(join(outDir, "summary.md"), toMarkdownSummary(result), "utf8");
   writeFileSync(join(outDir, "report.html"), toHtmlReport(result), "utf8");
+  writeFileSync(join(outDir, "results.sarif"), toSarifReport(result, driver), "utf8");
 
   if (enforce && violations.length > 0) {
     console.error(`[${driver}] Policy violations found: ${violations.length}`);

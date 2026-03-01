@@ -1,0 +1,122 @@
+{
+  "format_version": "1.0",
+  "terraform_version": "1.7.0",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "azurerm_linux_web_app.web",
+          "type": "azurerm_linux_web_app",
+          "name": "web",
+          "provider_name": "registry.terraform.io/hashicorp/azurerm",
+          "values": {
+            "name": "web",
+            "tags": { "env": "prod", "tier": "web" }
+          }
+        },
+        {
+          "address": "azurerm_linux_web_app.api",
+          "type": "azurerm_linux_web_app",
+          "name": "api",
+          "provider_name": "registry.terraform.io/hashicorp/azurerm",
+          "values": {
+            "name": "api",
+            "tags": { "env": "prod", "tier": "app" }
+          }
+        },
+        {
+          "address": "azurerm_virtual_machine.db",
+          "type": "azurerm_virtual_machine",
+          "name": "db",
+          "provider_name": "registry.terraform.io/hashicorp/azurerm",
+          "values": {
+            "name": "db",
+            "tags": { "env": "prod", "tier": "data" }
+          }
+        },
+        {
+          "address": "azurerm_network_security_group.web-nsg",
+          "type": "azurerm_network_security_group",
+          "name": "web-nsg",
+          "provider_name": "registry.terraform.io/hashicorp/azurerm",
+          "values": {
+            "name": "web-nsg",
+            "ingress": [
+              {
+                "from_port": 443,
+                "to_port": 443,
+                "protocol": "Tcp",
+                "cidr_blocks": ["0.0.0.0/0"]
+              }
+            ],
+            "egress": [
+              {
+                "from_port": 80,
+                "to_port": 8080,
+                "protocol": "Tcp",
+                "cidr_blocks": ["10.0.0.0/8"]
+              }
+            ],
+            "tags": { "env": "prod", "tier": "web" }
+          }
+        },
+        {
+          "address": "azurerm_network_security_group.api-nsg",
+          "type": "azurerm_network_security_group",
+          "name": "api-nsg",
+          "provider_name": "registry.terraform.io/hashicorp/azurerm",
+          "values": {
+            "name": "api-nsg",
+            "ingress": [
+              {
+                "from_port": 8080,
+                "to_port": 8080,
+                "protocol": "Tcp",
+                "cidr_blocks": ["10.0.0.0/8"]
+              }
+            ],
+            "egress": [
+              {
+                "from_port": 5432,
+                "to_port": 5432,
+                "protocol": "Tcp",
+                "cidr_blocks": ["10.0.0.0/8"]
+              }
+            ],
+            "tags": { "env": "prod", "tier": "app" }
+          }
+        },
+        {
+          "address": "azurerm_network_security_group.db-nsg",
+          "type": "azurerm_network_security_group",
+          "name": "db-nsg",
+          "provider_name": "registry.terraform.io/hashicorp/azurerm",
+          "values": {
+            "name": "db-nsg",
+            "ingress": [
+              {
+                "from_port": 5432,
+                "to_port": 5432,
+                "protocol": "Tcp",
+                "cidr_blocks": ["10.0.0.0/8"]
+              }
+            ],
+            "egress": [],
+            "tags": { "env": "prod", "tier": "data" }
+          }
+        },
+        {
+          "address": "azurerm_lb.web-lb",
+          "type": "azurerm_lb",
+          "name": "web-lb",
+          "provider_name": "registry.terraform.io/hashicorp/azurerm",
+          "values": {
+            "name": "web-lb",
+            "internal": false,
+            "tags": { "env": "prod", "tier": "web" }
+          }
+        }
+      ]
+    }
+  }
+}

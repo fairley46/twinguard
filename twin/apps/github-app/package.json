@@ -1,0 +1,22 @@
+{
+  "name": "@twin/github-app",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/server.ts",
+    "dev": "tsx watch src/server.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14.3",
+    "@octokit/app": "^16.1.2",
+    "@octokit/webhooks": "^14.2.0",
+    "@twin/core": "0.1.0",
+    "@twin/policy": "0.1.0",
+    "@twin/terraform": "0.1.0",
+    "hono": "^4.12.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "tsx": "^4.20.5"
+  }
+}

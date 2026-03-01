@@ -42,6 +42,13 @@ const LB_TYPES = new Set([
   "azurerm_lb",
 ]);
 
+// Firewall / NSG resource types (mapped to NetworkPolicyNode)
+const FIREWALL_TYPES = new Set([
+  "aws_security_group",
+  "google_compute_firewall",
+  "azurerm_network_security_group",
+]);
+
 function flattenModule(mod: TfModule): TfResource[] {
   const resources = mod.resources ?? [];
   const childResources = (mod.child_modules ?? []).flatMap(flattenModule);
@@ -106,16 +113,14 @@ export function parseTerraformPlan(planPath: string): TwinGraph {
   const ingressRoutes: IngressRoute[] = [];
   const networkPolicies: NetworkPolicyNode[] = [];
 
-  // Index security groups by their address (e.g. "aws_security_group.db")
-  // and by their name value (e.g. "db-sg") for reference resolution
+  // Index firewall rules by their address for reference resolution
   const sgByAddress = new Map<string, TfResource>();
   const sgByName = new Map<string, TfResource>();
 
   for (const r of resources) {
-    if (r.type === "aws_security_group") {
+    if (FIREWALL_TYPES.has(r.type)) {
       sgByAddress.set(r.address, r);
       if (r.values.name) sgByName.set(r.values.name, r);
-      // Also index by short name (e.g. "db" from "aws_security_group.db")
       sgByAddress.set(r.name, r);
     }
   }
@@ -145,7 +150,7 @@ export function parseTerraformPlan(planPath: string): TwinGraph {
 
   // Build NetworkPolicyNodes from security groups
   for (const r of resources) {
-    if (r.type !== "aws_security_group") continue;
+    if (!FIREWALL_TYPES.has(r.type)) continue;
 
     const tags = tagsOf(r);
     const env = envOf(tags);

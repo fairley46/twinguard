@@ -1,0 +1,111 @@
+{
+  "format_version": "1.0",
+  "terraform_version": "1.7.0",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "google_compute_instance.web",
+          "type": "google_compute_instance",
+          "name": "web",
+          "provider_name": "registry.terraform.io/hashicorp/google",
+          "values": {
+            "name": "web",
+            "tags": { "env": "prod", "tier": "web" }
+          }
+        },
+        {
+          "address": "google_compute_instance.api",
+          "type": "google_compute_instance",
+          "name": "api",
+          "provider_name": "registry.terraform.io/hashicorp/google",
+          "values": {
+            "name": "api",
+            "tags": { "env": "prod", "tier": "app" }
+          }
+        },
+        {
+          "address": "google_sql_database_instance.db",
+          "type": "google_sql_database_instance",
+          "name": "db",
+          "provider_name": "registry.terraform.io/hashicorp/google",
+          "values": {
+            "name": "db",
+            "tags": { "env": "prod", "tier": "data" }
+          }
+        },
+        {
+          "address": "google_compute_firewall.web-ingress",
+          "type": "google_compute_firewall",
+          "name": "web-ingress",
+          "provider_name": "registry.terraform.io/hashicorp/google",
+          "values": {
+            "name": "web-ingress",
+            "direction": "INGRESS",
+            "ingress": [
+              {
+                "from_port": 443,
+                "to_port": 443,
+                "protocol": "tcp",
+                "cidr_blocks": ["0.0.0.0/0"]
+              }
+            ],
+            "egress": [],
+            "tags": { "env": "prod", "tier": "web" }
+          }
+        },
+        {
+          "address": "google_compute_firewall.api-egress",
+          "type": "google_compute_firewall",
+          "name": "api-egress",
+          "provider_name": "registry.terraform.io/hashicorp/google",
+          "values": {
+            "name": "api-egress",
+            "direction": "EGRESS",
+            "ingress": [],
+            "egress": [
+              {
+                "from_port": 0,
+                "to_port": 65535,
+                "protocol": "-1",
+                "cidr_blocks": ["0.0.0.0/0"]
+              }
+            ],
+            "tags": { "env": "prod", "tier": "app" }
+          }
+        },
+        {
+          "address": "google_compute_firewall.db-public",
+          "type": "google_compute_firewall",
+          "name": "db-public",
+          "provider_name": "registry.terraform.io/hashicorp/google",
+          "values": {
+            "name": "db-public",
+            "direction": "INGRESS",
+            "ingress": [
+              {
+                "from_port": 5432,
+                "to_port": 5432,
+                "protocol": "tcp",
+                "cidr_blocks": ["0.0.0.0/0"]
+              }
+            ],
+            "egress": [],
+            "tags": { "env": "prod", "tier": "data" }
+          }
+        },
+        {
+          "address": "google_compute_forwarding_rule.web-lb",
+          "type": "google_compute_forwarding_rule",
+          "name": "web-lb",
+          "provider_name": "registry.terraform.io/hashicorp/google",
+          "values": {
+            "name": "web-lb",
+            "internal": false,
+            "tags": { "env": "prod", "tier": "web" }
+          }
+        }
+      ]
+    }
+  }
+}
