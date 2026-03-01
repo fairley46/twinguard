@@ -89,27 +89,44 @@ The volume of infrastructure changes is outpacing the ability of any security te
 
 ---
 
+### Competitive Landscape
+
+The market has three existing categories — none of which do what TwinGuard does.
+
+**Static IaC scanners** (Checkov, Trivy, KICS): Check your files for known bad patterns. 1,000+ rules, open source, widely adopted. Cannot simulate behavior — a file can pass every check and still expose your database because they don't model how resources relate to each other.
+
+**CSPM platforms** (Wiz, Prisma Cloud, Orca): Scan live running cloud infrastructure. Genuinely powerful blast radius analysis — on what's already deployed. $100K+/year. Require cloud credentials and agents. Now moving toward pre-merge analysis, which is TwinGuard's territory. **Estimated window: 12–18 months.**
+
+**Runtime policy engines** (OPA Gatekeeper, Kyverno): Enforce at admission/deploy time. No developer feedback until `kubectl apply` or `terraform apply`.
+
+TwinGuard's position: **behavioral simulation, pre-merge, developer-layer, MCP-native**. Unoccupied by any of the above.
+
+---
+
 ### Roadmap
 
-| Phase | What ships | Why it matters |
-|-------|-----------|----------------|
-| **Now** | K8s engine · Golden rules · CI pipeline · HTML report | Working prototype — proves the concept |
-| **Next** | GitHub App — one-click install, automatic PR comments | Solves distribution — zero-friction adoption |
-| **Then** | Terraform adapter | 10x the addressable market |
-| **Later** | Web dashboard · Policy management UI · Historical tracking | Turns a tool into a platform |
-| **SaaS** | Multi-tenant · Team policies · Audit exports · SARIF integration | Monetizable product |
+Sequenced to close distribution and enterprise adoption gaps before the incumbents arrive.
+
+| Priority | What | Why it matters |
+|----------|------|----------------|
+| **1** | SARIF output | Show up in GitHub Security tab alongside Checkov/Trivy — legitimacy and visibility |
+| **2** | GitHub App | One-click install — zero-friction adoption, enables freemium |
+| **3** | OPA / Rego import | Enterprises already have Rego policies — "bring your own policies" removes the biggest objection |
+| **4** | GCP + Azure adapters | Expands beyond AWS Terraform — full multi-cloud coverage |
+| **5** | Kyverno / Gatekeeper export | Generate runtime enforcement from pre-merge analysis — closes the full SDLC loop |
+| **6** | Web dashboard | Persistent history, team-wide policy status, violation trends |
+| **7** | Policy management UI | Visual rule management for non-engineers |
+| **8** | Multi-tenant SaaS | Full platform, monetization |
 
 ---
 
 ### The Ask
 
-TwinGuard is a working prototype with a proven engine, a live demo, and a clear expansion path.
+TwinGuard has a working engine, two infrastructure adapters (K8s + Terraform), GitHub Actions integration, an MCP server for AI-native use, and a live demo that proves the concept end to end.
 
-The next step is distribution: turning this into a GitHub App so any engineering team can install it in 30 seconds and get TwinGuard running on their repos without touching a CLI.
+The window is real. The CSPM giants are moving left. The next move is SARIF output — one week of work that puts TwinGuard in GitHub's Security tab — followed by the GitHub App for distribution.
 
-After that, Terraform. After that, a dashboard.
-
-The infrastructure security problem is real. The tooling gap is real. TwinGuard fills it.
+The infrastructure security problem is real. The tooling gap is real. The window is open. TwinGuard fills it.
 
 ---
 

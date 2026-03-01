@@ -215,11 +215,18 @@ Add it to `defaultRules` — it runs on every analysis, for every driver, includ
 
 ## Roadmap
 
-- [ ] GitHub App — one-click install, zero CLI setup
-- [ ] Web dashboard — persistent history, team-wide policy status
-- [ ] GCP + Azure + Pulumi adapters
-- [ ] Policy management UI
-- [ ] SARIF output for GitHub Security Dashboard
+Sequenced based on competitive research — the CSPM giants (Wiz, Prisma) are moving left into pre-merge analysis. See [docs/ROADMAP.md](./docs/ROADMAP.md) for the full rationale.
+
+| Priority | What | Why |
+|----------|------|-----|
+| 1 | **SARIF output** | Show up in GitHub Security tab alongside Checkov/Trivy — legitimacy unlock |
+| 2 | **GitHub App** | One-click install — solves distribution |
+| 3 | **OPA / Rego policy import** | Enterprises already have Rego policies — removes the biggest adoption objection |
+| 4 | **GCP + Azure adapters** | Expand beyond AWS |
+| 5 | **Kyverno / Gatekeeper export** | Generate runtime enforcement policies from pre-merge analysis — closes the SDLC loop |
+| 6 | **Web dashboard** | Persistent history, team-wide policy status |
+| 7 | **Policy management UI** | Visual rule management for non-engineers |
+| 8 | **Multi-tenant SaaS** | Full platform, monetization |
 
 ---
 
