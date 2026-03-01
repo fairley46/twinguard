@@ -87,3 +87,8 @@ export function createSnapshot(manifests: TwinSnapshot["manifests"]): TwinSnapsh
   const reachability = computeReachability(graph);
   return { manifests, graph, reachability };
 }
+
+export function createSnapshotFromGraph(graph: TwinGraph): TwinSnapshot {
+  const reachability = computeReachability(graph);
+  return { manifests: [], graph, reachability };
+}

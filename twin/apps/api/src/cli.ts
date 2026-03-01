@@ -2,6 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   createSnapshot,
+  createSnapshotFromGraph,
   diffSnapshots,
   parseManifestDir,
   toHtmlReport,
@@ -9,8 +10,10 @@ import {
   type AnalysisResult,
 } from "@twin/core";
 import { evaluatePolicies } from "@twin/policy";
+import { parseTerraformPlanDir } from "@twin/terraform";
 
 type ArgMap = Record<string, string | boolean>;
+type Driver = "k8s" | "terraform";
 
 function parseArgs(argv: string[]): ArgMap {
   const out: ArgMap = {};
@@ -43,23 +46,33 @@ function getBool(args: ArgMap, key: string, fallback: boolean): boolean {
   return fallback;
 }
 
+function getDriver(args: ArgMap): Driver {
+  const val = args["driver"];
+  if (val === "terraform") return "terraform";
+  return "k8s";
+}
+
 function runAnalyze(args: ArgMap): number {
   const baselineDir = getString(args, "baseline");
   const candidateDir = getString(args, "candidate");
   const outDir = getString(args, "out-dir", "artifacts");
   const enforce = getBool(args, "enforce", false);
+  const driver = getDriver(args);
 
-  const baseline = createSnapshot(parseManifestDir(baselineDir));
-  const candidate = createSnapshot(parseManifestDir(candidateDir));
+  const baseline =
+    driver === "terraform"
+      ? createSnapshotFromGraph(parseTerraformPlanDir(baselineDir))
+      : createSnapshot(parseManifestDir(baselineDir));
+
+  const candidate =
+    driver === "terraform"
+      ? createSnapshotFromGraph(parseTerraformPlanDir(candidateDir))
+      : createSnapshot(parseManifestDir(candidateDir));
+
   const diff = diffSnapshots(baseline, candidate);
   const violations = evaluatePolicies({ snapshot: candidate });
 
-  const result: AnalysisResult = {
-    baseline,
-    candidate,
-    diff,
-    violations,
-  };
+  const result: AnalysisResult = { baseline, candidate, diff, violations };
 
   mkdirSync(outDir, { recursive: true });
   writeFileSync(join(outDir, "analysis.json"), JSON.stringify(result, null, 2), "utf8");
@@ -67,11 +80,11 @@ function runAnalyze(args: ArgMap): number {
   writeFileSync(join(outDir, "report.html"), toHtmlReport(result), "utf8");
 
   if (enforce && violations.length > 0) {
-    console.error(`Policy violations found: ${violations.length}`);
+    console.error(`[${driver}] Policy violations found: ${violations.length}`);
     return 1;
   }
 
-  console.log(`Analysis complete. Violations: ${violations.length}. Artifacts in ${outDir}`);
+  console.log(`[${driver}] Analysis complete. Violations: ${violations.length}. Artifacts in ${outDir}`);
   return 0;
 }
 

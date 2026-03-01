@@ -1,0 +1,209 @@
+name: TwinGuard
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  # ── Kubernetes analysis ──────────────────────────────────────────────────────
+  twinguard-k8s:
+    name: TwinGuard / Kubernetes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Render baseline manifests (Helm)
+        id: render-baseline
+        continue-on-error: true
+        run: |
+          mkdir -p /tmp/twinguard/k8s/baseline
+          helm template demo examples/demo-mesh \
+            > /tmp/twinguard/k8s/baseline/rendered.yaml
+
+      - name: Render candidate manifests (Helm)
+        id: render-candidate
+        continue-on-error: true
+        run: |
+          mkdir -p /tmp/twinguard/k8s/candidate
+          helm template demo examples/demo-mesh \
+            -f examples/demo-mesh/values-risky.yaml \
+            > /tmp/twinguard/k8s/candidate/rendered.yaml
+
+      # Fall back to pre-rendered fixtures if Helm is not available
+      - name: Use fixture manifests (no Helm)
+        if: steps.render-baseline.outcome == 'failure' || steps.render-candidate.outcome == 'failure'
+        run: |
+          mkdir -p /tmp/twinguard/k8s/baseline /tmp/twinguard/k8s/candidate
+          cp fixtures/baseline/manifests.yaml /tmp/twinguard/k8s/baseline/manifests.yaml
+          cp fixtures/candidate/manifests.yaml /tmp/twinguard/k8s/candidate/manifests.yaml
+          echo "::notice::Helm not available — using pre-rendered fixtures for demo"
+
+      - name: Run TwinGuard analysis (K8s)
+        id: twinguard-k8s
+        run: |
+          npm run analyze -- \
+            --driver k8s \
+            --baseline /tmp/twinguard/k8s/baseline \
+            --candidate /tmp/twinguard/k8s/candidate \
+            --out-dir artifacts/k8s
+
+      - name: Post PR comment (K8s)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('artifacts/k8s/summary.md', 'utf8');
+            const body = [
+              '## TwinGuard · Kubernetes Analysis',
+              '',
+              '> Simulating network reachability and policy violations for this PR.',
+              '',
+              summary,
+              '',
+              `<details><summary>View full report</summary>`,
+              '',
+              `Download \`twinguard-k8s-report\` artifact for the HTML report.`,
+              '</details>',
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });
+
+      - name: Upload K8s report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: twinguard-k8s-report
+          path: artifacts/k8s/
+          retention-days: 30
+
+  # ── Terraform analysis ───────────────────────────────────────────────────────
+  twinguard-terraform:
+    name: TwinGuard / Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Setup Terraform
+        id: setup-terraform
+        continue-on-error: true
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.7.0'
+
+      - name: Generate baseline Terraform plan
+        id: tf-plan-baseline
+        continue-on-error: true
+        env:
+          # Set your cloud provider credentials as GitHub secrets
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+        run: |
+          mkdir -p /tmp/twinguard/terraform/baseline
+          # Checkout main branch for baseline
+          git show origin/main:terraform/main.tf > /tmp/main-baseline.tf 2>/dev/null || true
+          # Run plan and export as JSON
+          cd terraform 2>/dev/null && \
+            terraform init -input=false && \
+            terraform plan -out=/tmp/baseline.tfplan -input=false && \
+            terraform show -json /tmp/baseline.tfplan \
+              > /tmp/twinguard/terraform/baseline/plan.json || true
+
+      - name: Generate candidate Terraform plan
+        id: tf-plan-candidate
+        continue-on-error: true
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+        run: |
+          mkdir -p /tmp/twinguard/terraform/candidate
+          cd terraform 2>/dev/null && \
+            terraform plan -out=/tmp/candidate.tfplan -input=false && \
+            terraform show -json /tmp/candidate.tfplan \
+              > /tmp/twinguard/terraform/candidate/plan.json || true
+
+      # Fall back to demo fixtures if Terraform is not configured
+      - name: Use fixture plans (no Terraform configured)
+        if: steps.tf-plan-baseline.outcome == 'failure' || steps.tf-plan-candidate.outcome == 'failure'
+        run: |
+          mkdir -p /tmp/twinguard/terraform/baseline /tmp/twinguard/terraform/candidate
+          cp fixtures/terraform/baseline/plan.json /tmp/twinguard/terraform/baseline/plan.json
+          cp fixtures/terraform/candidate/plan.json /tmp/twinguard/terraform/candidate/plan.json
+          echo "::notice::Terraform not configured — using demo fixtures"
+
+      - name: Run TwinGuard analysis (Terraform)
+        id: twinguard-terraform
+        run: |
+          npm run analyze -- \
+            --driver terraform \
+            --baseline /tmp/twinguard/terraform/baseline \
+            --candidate /tmp/twinguard/terraform/candidate \
+            --out-dir artifacts/terraform
+
+      - name: Post PR comment (Terraform)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('artifacts/terraform/summary.md', 'utf8');
+            const body = [
+              '## TwinGuard · Terraform Analysis',
+              '',
+              '> Simulating AWS security group reachability and policy violations for this PR.',
+              '',
+              summary,
+              '',
+              `<details><summary>View full report</summary>`,
+              '',
+              `Download \`twinguard-terraform-report\` artifact for the HTML report.`,
+              '</details>',
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });
+
+      - name: Upload Terraform report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: twinguard-terraform-report
+          path: artifacts/terraform/
+          retention-days: 30

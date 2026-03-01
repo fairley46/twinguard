@@ -5,7 +5,8 @@
   "description": "TwinGuard — Kubernetes-first infrastructure digital twin. Simulate before you ship.",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "packages/terraform"
   ],
   "scripts": {
     "build": "npm run -ws build",

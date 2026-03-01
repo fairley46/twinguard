@@ -1,0 +1,100 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.7.0",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_security_group.web",
+          "type": "aws_security_group",
+          "name": "web",
+          "values": {
+            "name": "web-sg",
+            "description": "Web tier security group",
+            "ingress": [
+              { "from_port": 80,  "to_port": 80,  "protocol": "tcp", "cidr_blocks": ["0.0.0.0/0"], "security_groups": [] },
+              { "from_port": 443, "to_port": 443, "protocol": "tcp", "cidr_blocks": ["0.0.0.0/0"], "security_groups": [] }
+            ],
+            "egress": [
+              { "from_port": 8080, "to_port": 8080, "protocol": "tcp", "cidr_blocks": [], "security_groups": ["api-sg"] }
+            ],
+            "tags": { "tier": "web", "env": "prod", "Name": "web-sg" }
+          }
+        },
+        {
+          "address": "aws_security_group.api",
+          "type": "aws_security_group",
+          "name": "api",
+          "values": {
+            "name": "api-sg",
+            "description": "API tier security group",
+            "ingress": [
+              { "from_port": 8080, "to_port": 8080, "protocol": "tcp", "cidr_blocks": [], "security_groups": ["web-sg"] }
+            ],
+            "egress": [
+              { "from_port": 5432, "to_port": 5432, "protocol": "tcp", "cidr_blocks": [], "security_groups": ["db-sg"] }
+            ],
+            "tags": { "tier": "app", "env": "prod", "Name": "api-sg" }
+          }
+        },
+        {
+          "address": "aws_security_group.db",
+          "type": "aws_security_group",
+          "name": "db",
+          "values": {
+            "name": "db-sg",
+            "description": "Database security group — ingress from API only",
+            "ingress": [
+              { "from_port": 5432, "to_port": 5432, "protocol": "tcp", "cidr_blocks": [], "security_groups": ["api-sg"] }
+            ],
+            "egress": [],
+            "tags": { "tier": "data", "env": "prod", "Name": "db-sg" }
+          }
+        },
+        {
+          "address": "aws_instance.web",
+          "type": "aws_instance",
+          "name": "web",
+          "values": {
+            "instance_type": "t3.micro",
+            "vpc_security_group_ids": ["web-sg"],
+            "tags": { "Name": "web-server", "tier": "web", "env": "prod" }
+          }
+        },
+        {
+          "address": "aws_instance.api",
+          "type": "aws_instance",
+          "name": "api",
+          "values": {
+            "instance_type": "t3.small",
+            "vpc_security_group_ids": ["api-sg"],
+            "tags": { "Name": "api-server", "tier": "app", "env": "prod" }
+          }
+        },
+        {
+          "address": "aws_rds_instance.db",
+          "type": "aws_rds_instance",
+          "name": "db",
+          "values": {
+            "engine": "postgres",
+            "engine_version": "16.1",
+            "instance_class": "db.t3.medium",
+            "vpc_security_group_ids": ["db-sg"],
+            "tags": { "Name": "prod-db", "tier": "data", "env": "prod" }
+          }
+        },
+        {
+          "address": "aws_lb.web_alb",
+          "type": "aws_lb",
+          "name": "web_alb",
+          "values": {
+            "name": "web-alb",
+            "internal": false,
+            "load_balancer_type": "application",
+            "tags": { "env": "prod", "Name": "web-alb" }
+          }
+        }
+      ]
+    }
+  }
+}

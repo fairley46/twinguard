@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@twin/core": "0.1.0",
-    "@twin/policy": "0.1.0"
+    "@twin/policy": "0.1.0",
+    "@twin/terraform": "0.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
