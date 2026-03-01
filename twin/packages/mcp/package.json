@@ -1,0 +1,21 @@
+{
+  "name": "@twin/mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "@twin/core": "0.1.0",
+    "@twin/policy": "0.1.0",
+    "@twin/terraform": "0.1.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "tsx": "^4.20.5"
+  }
+}

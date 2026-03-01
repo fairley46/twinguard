@@ -6,7 +6,8 @@
   "workspaces": [
     "apps/*",
     "packages/*",
-    "packages/terraform"
+    "packages/terraform",
+    "packages/mcp"
   ],
   "scripts": {
     "build": "npm run -ws build",
