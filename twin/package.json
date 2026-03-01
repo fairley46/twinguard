@@ -10,7 +10,8 @@
   "scripts": {
     "build": "npm run -ws build",
     "analyze": "npm --workspace @twin/api run analyze",
-    "report": "npm --workspace @twin/api run report"
+    "report": "npm --workspace @twin/api run report",
+    "watch": "npm --workspace @twin/api run watch"
   },
   "devDependencies": {
     "typescript": "^5.8.2"
