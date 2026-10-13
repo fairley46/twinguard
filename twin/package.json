@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "build": "npm run -ws build",
+    "test": "node --test test/analyze.test.mjs",
     "analyze": "npm --workspace @twin/api run analyze",
     "report": "npm --workspace @twin/api run report",
     "watch": "npm --workspace @twin/api run watch"
