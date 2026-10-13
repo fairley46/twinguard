@@ -160,7 +160,6 @@ jobs:
           AWS_REGION: us-east-1
         run: |
           mkdir -p /tmp/twinguard/terraform/baseline
-          git show origin/main:terraform/main.tf > /tmp/main-baseline.tf 2>/dev/null || true
           test -d terraform
           cd terraform
           terraform init -input=false
