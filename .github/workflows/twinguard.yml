@@ -166,12 +166,12 @@ jobs:
           mkdir -p /tmp/twinguard/terraform/baseline
           # Checkout main branch for baseline
           git show origin/main:terraform/main.tf > /tmp/main-baseline.tf 2>/dev/null || true
-          # Run plan and export as JSON
-          cd terraform 2>/dev/null && \
-            terraform init -input=false && \
-            terraform plan -out=/tmp/baseline.tfplan -input=false && \
-            terraform show -json /tmp/baseline.tfplan \
-              > /tmp/twinguard/terraform/baseline/plan.json || true
+          test -d terraform
+          cd terraform
+          terraform init -input=false
+          terraform plan -out=/tmp/baseline.tfplan -input=false
+          terraform show -json /tmp/baseline.tfplan \
+            > /tmp/twinguard/terraform/baseline/plan.json
 
       - name: Generate candidate Terraform plan
         id: tf-plan-candidate
@@ -182,10 +182,11 @@ jobs:
           AWS_REGION: us-east-1
         run: |
           mkdir -p /tmp/twinguard/terraform/candidate
-          cd terraform 2>/dev/null && \
-            terraform plan -out=/tmp/candidate.tfplan -input=false && \
-            terraform show -json /tmp/candidate.tfplan \
-              > /tmp/twinguard/terraform/candidate/plan.json || true
+          test -d terraform
+          cd terraform
+          terraform plan -out=/tmp/candidate.tfplan -input=false
+          terraform show -json /tmp/candidate.tfplan \
+            > /tmp/twinguard/terraform/candidate/plan.json
 
       # Fall back to demo fixtures if Terraform is not configured
       - name: Use fixture plans (no Terraform configured)
