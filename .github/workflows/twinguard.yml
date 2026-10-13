@@ -11,7 +11,29 @@ permissions:
   pull-requests: write
   security-events: write
 
+defaults:
+  run:
+    working-directory: twin
+
 jobs:
+  test:
+    name: TwinGuard / test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: twin/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
   # ── Kubernetes analysis ──────────────────────────────────────────────────────
   twinguard-k8s:
     name: TwinGuard / Kubernetes
@@ -25,6 +47,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: twin/package-lock.json
 
       - name: Install dependencies
         run: npm install
@@ -70,7 +93,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const summary = fs.readFileSync('artifacts/k8s/summary.md', 'utf8');
+            const summary = fs.readFileSync('twin/artifacts/k8s/summary.md', 'utf8');
             const body = [
               '## TwinGuard · Kubernetes Analysis',
               '',
@@ -95,7 +118,7 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: artifacts/k8s/results.sarif
+          sarif_file: twin/artifacts/k8s/results.sarif
           category: twinguard-k8s
 
       - name: Upload K8s report
@@ -103,7 +126,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: twinguard-k8s-report
-          path: artifacts/k8s/
+          path: twin/artifacts/k8s/
           retention-days: 30
 
   # ── Terraform analysis ───────────────────────────────────────────────────────
@@ -119,6 +142,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: twin/package-lock.json
 
       - name: Install dependencies
         run: npm install
@@ -187,7 +211,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const summary = fs.readFileSync('artifacts/terraform/summary.md', 'utf8');
+            const summary = fs.readFileSync('twin/artifacts/terraform/summary.md', 'utf8');
             const body = [
               '## TwinGuard · Terraform Analysis',
               '',
@@ -212,7 +236,7 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: artifacts/terraform/results.sarif
+          sarif_file: twin/artifacts/terraform/results.sarif
           category: twinguard-terraform
 
       - name: Upload Terraform report
@@ -220,5 +244,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: twinguard-terraform-report
-          path: artifacts/terraform/
+          path: twin/artifacts/terraform/
           retention-days: 30
