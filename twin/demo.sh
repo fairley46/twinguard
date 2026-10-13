@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# TwinGuard — Interactive Demo
-# Simulate before you ship.
 set -euo pipefail
 
 TWIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -61,8 +59,6 @@ print_violations() {
 
 header
 
-# ── PART 1: KUBERNETES ────────────────────────────────────────────────────────
-
 step "Part 1 of 2 — Kubernetes"
 echo ""
 echo "  Your team runs a production Kubernetes cluster."
@@ -76,16 +72,15 @@ echo -e "  ${RED}Both changes would cause a production security incident if merg
 echo ""
 pause
 
-# K8s — safe baseline
 step "K8s — Safe baseline (0 violations expected)"
 separator
 echo ""
 mkdir -p "$ARTIFACTS/k8s"
-npm --workspace @twin/api run analyze -- \
+(cd "$TWIN_ROOT" && npm run analyze -- \
   --driver k8s \
   --baseline "$K8S_BASELINE" \
   --candidate "$K8S_CANDIDATE_SAFE" \
-  --out-dir "$ARTIFACTS/k8s" 2>&1 | grep -v "^$" || true
+  --out-dir "$ARTIFACTS/k8s") 2>&1 | grep -v "^$" || true
 echo ""
 echo -e "${DIM}--- Summary ---${RESET}"
 cat "$ARTIFACTS/k8s/summary.md"
@@ -93,15 +88,14 @@ echo ""
 ok "Baseline is clean. No violations."
 pause
 
-# K8s — risky candidate
 step "K8s — Risky candidate (violations expected)"
 separator
 echo ""
-npm --workspace @twin/api run analyze -- \
+(cd "$TWIN_ROOT" && npm run analyze -- \
   --driver k8s \
   --baseline "$K8S_BASELINE" \
   --candidate "$K8S_CANDIDATE_RISKY" \
-  --out-dir "$ARTIFACTS/k8s" 2>&1 | grep -v "^$" || true
+  --out-dir "$ARTIFACTS/k8s") 2>&1 | grep -v "^$" || true
 echo ""
 echo -e "${DIM}--- Summary ---${RESET}"
 cat "$ARTIFACTS/k8s/summary.md"
@@ -116,8 +110,6 @@ echo -e "           Any selected pod can reach any external endpoint."
 echo ""
 fail "PR would be blocked. Comment posted to GitHub. Report archived."
 pause
-
-# ── PART 2: TERRAFORM ────────────────────────────────────────────────────────
 
 header
 step "Part 2 of 2 — Terraform (AWS)"
@@ -134,16 +126,15 @@ echo -e "  ${RED}Both changes would expose production infrastructure.${RESET}"
 echo ""
 pause
 
-# Terraform — safe baseline
 step "Terraform — Safe baseline (0 violations expected)"
 separator
 echo ""
 mkdir -p "$ARTIFACTS/terraform"
-npm --workspace @twin/api run analyze -- \
+(cd "$TWIN_ROOT" && npm run analyze -- \
   --driver terraform \
   --baseline "$TF_BASELINE" \
   --candidate "$TF_CANDIDATE_SAFE" \
-  --out-dir "$ARTIFACTS/terraform" 2>&1 | grep -v "^$" || true
+  --out-dir "$ARTIFACTS/terraform") 2>&1 | grep -v "^$" || true
 echo ""
 echo -e "${DIM}--- Summary ---${RESET}"
 cat "$ARTIFACTS/terraform/summary.md"
@@ -151,15 +142,14 @@ echo ""
 ok "Baseline is clean. No violations."
 pause
 
-# Terraform — risky candidate
 step "Terraform — Risky candidate (violations expected)"
 separator
 echo ""
-npm --workspace @twin/api run analyze -- \
+(cd "$TWIN_ROOT" && npm run analyze -- \
   --driver terraform \
   --baseline "$TF_BASELINE" \
   --candidate "$TF_CANDIDATE_RISKY" \
-  --out-dir "$ARTIFACTS/terraform" 2>&1 | grep -v "^$" || true
+  --out-dir "$ARTIFACTS/terraform") 2>&1 | grep -v "^$" || true
 echo ""
 echo -e "${DIM}--- Summary ---${RESET}"
 cat "$ARTIFACTS/terraform/summary.md"
@@ -174,8 +164,6 @@ echo -e "           Any EC2 or ECS workload using this SG can reach any endpoint
 echo ""
 fail "PR would be blocked. Comment posted to GitHub. Report archived."
 pause
-
-# ── ARTIFACTS ─────────────────────────────────────────────────────────────────
 
 header
 step "Artifacts produced every run"

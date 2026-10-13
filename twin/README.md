@@ -72,33 +72,30 @@ Rules are plain TypeScript — add your own in under 10 lines.
 ```bash
 git clone https://github.com/fairley46/twinguard
 cd twinguard
+cd twin
 npm install
 ```
 
 ### Run the demo
 
-No Helm, no cloud account, no configuration required. All fixtures are pre-rendered and ship with the repo.
+No Helm, no cloud account, no configuration required. All fixtures are pre-rendered and ship with the repo. Run the commands from `twin`.
 
 ```bash
-# Kubernetes — catches public database exposure + wildcard egress
 npm run analyze -- --driver k8s \
   --baseline fixtures/baseline \
   --candidate fixtures/candidate \
   --out-dir artifacts/k8s
 
-# Terraform (AWS)
 npm run analyze -- --driver terraform \
   --baseline fixtures/terraform/baseline \
   --candidate fixtures/terraform/candidate \
   --out-dir artifacts/terraform
 
-# GCP
 npm run analyze -- --driver terraform \
   --baseline fixtures/gcp/baseline \
   --candidate fixtures/gcp/candidate \
   --out-dir artifacts/gcp
 
-# Azure
 npm run analyze -- --driver terraform \
   --baseline fixtures/azure/baseline \
   --candidate fixtures/azure/candidate \
@@ -122,24 +119,24 @@ Or run the interactive terminal demo:
 Drop-in workflow that runs on every pull request. Posts a violation summary as a PR comment, uploads SARIF to the GitHub Security tab, and archives the full HTML report as an artifact.
 
 ```yaml
-# .github/workflows/twinguard.yml
 - name: Run TwinGuard analysis
+  working-directory: twin
   run: |
     npm run analyze -- \
       --driver k8s \
       --baseline /tmp/baseline \
       --candidate /tmp/candidate \
       --out-dir artifacts/k8s \
-      --enforce    # exit 1 on violations — blocks the merge
+      --enforce
 
 - name: Upload SARIF to GitHub Security tab
   uses: github/codeql-action/upload-sarif@v3
   with:
-    sarif_file: artifacts/k8s/results.sarif
+    sarif_file: twin/artifacts/k8s/results.sarif
     category: twinguard-k8s
 ```
 
-See the full workflow at [`.github/workflows/twinguard.yml`](.github/workflows/twinguard.yml). It includes Helm rendering, Terraform plan generation, pre-rendered fixture fallback, PR comments, and 30-day artifact retention — out of the box.
+See the full workflow at [`.github/workflows/twinguard.yml`](../.github/workflows/twinguard.yml). It includes Helm rendering, Terraform plan generation, pre-rendered fixture fallback, PR comments, and 30-day artifact retention — out of the box.
 
 ---
 
@@ -155,7 +152,7 @@ TwinGuard ships as a [Model Context Protocol](https://modelcontextprotocol.io) s
     "twinguard": {
       "type": "stdio",
       "command": "npx",
-      "args": ["tsx", "/path/to/twinguard/packages/mcp/src/index.ts"]
+      "args": ["tsx", "/path/to/twinguard/twin/packages/mcp/src/index.ts"]
     }
   }
 }
@@ -178,20 +175,17 @@ Ask Claude: *"Analyze my Terraform changes for security violations"* → Claude 
 Works in any CI that can run shell commands (GitHub Actions, GitLab CI, Jenkins, local).
 
 ```bash
-# Analyze and write all artifacts
 npm run analyze -- \
   --driver k8s \
   --baseline /path/to/baseline \
   --candidate /path/to/candidate \
   --out-dir artifacts \
-  --enforce          # exit 1 if violations found
+  --enforce
 
-# Re-generate report from a saved analysis
 npm run report -- \
   --in artifacts/analysis.json \
   --out-dir artifacts
 
-# Live watch mode — re-runs on every file save
 npm run watch -- \
   --driver k8s \
   --baseline fixtures/baseline \
@@ -214,7 +208,6 @@ npm run watch -- \
 Self-host the TwinGuard GitHub App to get automatic analysis on every PR across your entire organization — no per-repo workflow setup required.
 
 ```bash
-# Environment
 GITHUB_APP_ID=your-app-id
 GITHUB_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\n..."
 GITHUB_WEBHOOK_SECRET=your-webhook-secret
@@ -275,27 +268,28 @@ Add it to `defaultRules` — it runs on every analysis across all drivers: K8s, 
 
 ```
 twinguard/
-├── packages/
-│   ├── core/          # Property graph, simulation engine, diff, HTML/SARIF reports
-│   ├── policy/        # Built-in policy rules (GR-001 · GR-002 · GR-003)
-│   ├── terraform/     # Terraform plan JSON parser (AWS · GCP · Azure)
-│   └── mcp/           # MCP server — analyze, list_policies, explain_violation
-├── apps/
-│   ├── api/           # CLI: npm run analyze / report / watch
-│   └── github-app/    # GitHub App webhook server (Hono + Octokit)
-├── fixtures/
-│   ├── baseline/      # Pre-rendered safe K8s manifests
-│   ├── candidate/     # Risky K8s manifests (triggers GR-001 + GR-003)
-│   ├── terraform/     # AWS Terraform plans (baseline · candidate)
-│   ├── gcp/           # GCP Terraform plans (baseline · candidate)
-│   └── azure/         # Azure Terraform plans (baseline · candidate)
 ├── .github/
 │   └── workflows/
-│       └── twinguard.yml   # Full CI integration — K8s + Terraform, PR comments, SARIF
-└── docs/
-    ├── PITCH.md        # Product overview and competitive landscape
-    ├── ROADMAP.md      # Development priorities and rationale
-    └── QUICKSTART.md   # Detailed setup guide
+│       └── twinguard.yml
+└── twin/
+    ├── packages/
+    │   ├── core/
+    │   ├── policy/
+    │   ├── terraform/
+    │   └── mcp/
+    ├── apps/
+    │   ├── api/
+    │   └── github-app/
+    ├── fixtures/
+    │   ├── baseline/
+    │   ├── candidate/
+    │   ├── terraform/
+    │   ├── gcp/
+    │   └── azure/
+    └── docs/
+        ├── PITCH.md
+        ├── ROADMAP.md
+        └── QUICKSTART.md
 ```
 
 ---
