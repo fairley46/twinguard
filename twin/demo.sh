@@ -81,11 +81,11 @@ step "K8s — Safe baseline (0 violations expected)"
 separator
 echo ""
 mkdir -p "$ARTIFACTS/k8s"
-npm --workspace @twin/api run analyze -- \
+(cd "$TWIN_ROOT" && npm run analyze -- \
   --driver k8s \
   --baseline "$K8S_BASELINE" \
   --candidate "$K8S_CANDIDATE_SAFE" \
-  --out-dir "$ARTIFACTS/k8s" 2>&1 | grep -v "^$" || true
+  --out-dir "$ARTIFACTS/k8s") 2>&1 | grep -v "^$" || true
 echo ""
 echo -e "${DIM}--- Summary ---${RESET}"
 cat "$ARTIFACTS/k8s/summary.md"
@@ -97,11 +97,11 @@ pause
 step "K8s — Risky candidate (violations expected)"
 separator
 echo ""
-npm --workspace @twin/api run analyze -- \
+(cd "$TWIN_ROOT" && npm run analyze -- \
   --driver k8s \
   --baseline "$K8S_BASELINE" \
   --candidate "$K8S_CANDIDATE_RISKY" \
-  --out-dir "$ARTIFACTS/k8s" 2>&1 | grep -v "^$" || true
+  --out-dir "$ARTIFACTS/k8s") 2>&1 | grep -v "^$" || true
 echo ""
 echo -e "${DIM}--- Summary ---${RESET}"
 cat "$ARTIFACTS/k8s/summary.md"
@@ -139,11 +139,11 @@ step "Terraform — Safe baseline (0 violations expected)"
 separator
 echo ""
 mkdir -p "$ARTIFACTS/terraform"
-npm --workspace @twin/api run analyze -- \
+(cd "$TWIN_ROOT" && npm run analyze -- \
   --driver terraform \
   --baseline "$TF_BASELINE" \
   --candidate "$TF_CANDIDATE_SAFE" \
-  --out-dir "$ARTIFACTS/terraform" 2>&1 | grep -v "^$" || true
+  --out-dir "$ARTIFACTS/terraform") 2>&1 | grep -v "^$" || true
 echo ""
 echo -e "${DIM}--- Summary ---${RESET}"
 cat "$ARTIFACTS/terraform/summary.md"
@@ -155,11 +155,11 @@ pause
 step "Terraform — Risky candidate (violations expected)"
 separator
 echo ""
-npm --workspace @twin/api run analyze -- \
+(cd "$TWIN_ROOT" && npm run analyze -- \
   --driver terraform \
   --baseline "$TF_BASELINE" \
   --candidate "$TF_CANDIDATE_RISKY" \
-  --out-dir "$ARTIFACTS/terraform" 2>&1 | grep -v "^$" || true
+  --out-dir "$ARTIFACTS/terraform") 2>&1 | grep -v "^$" || true
 echo ""
 echo -e "${DIM}--- Summary ---${RESET}"
 cat "$ARTIFACTS/terraform/summary.md"

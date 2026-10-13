@@ -12,9 +12,9 @@
   "scripts": {
     "build": "npm run -ws build",
     "test": "node --test test/analyze.test.mjs",
-    "analyze": "npm --workspace @twin/api run analyze",
-    "report": "npm --workspace @twin/api run report",
-    "watch": "npm --workspace @twin/api run watch"
+    "analyze": "tsx apps/api/src/cli.ts analyze",
+    "report": "tsx apps/api/src/cli.ts report",
+    "watch": "tsx apps/api/src/watch.ts"
   },
   "devDependencies": {
     "typescript": "^5.8.2"
