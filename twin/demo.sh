@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# TwinGuard — Interactive Demo
-# Simulate before you ship.
 set -euo pipefail
 
 TWIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -61,8 +59,6 @@ print_violations() {
 
 header
 
-# ── PART 1: KUBERNETES ────────────────────────────────────────────────────────
-
 step "Part 1 of 2 — Kubernetes"
 echo ""
 echo "  Your team runs a production Kubernetes cluster."
@@ -76,7 +72,6 @@ echo -e "  ${RED}Both changes would cause a production security incident if merg
 echo ""
 pause
 
-# K8s — safe baseline
 step "K8s — Safe baseline (0 violations expected)"
 separator
 echo ""
@@ -93,7 +88,6 @@ echo ""
 ok "Baseline is clean. No violations."
 pause
 
-# K8s — risky candidate
 step "K8s — Risky candidate (violations expected)"
 separator
 echo ""
@@ -117,8 +111,6 @@ echo ""
 fail "PR would be blocked. Comment posted to GitHub. Report archived."
 pause
 
-# ── PART 2: TERRAFORM ────────────────────────────────────────────────────────
-
 header
 step "Part 2 of 2 — Terraform (AWS)"
 echo ""
@@ -134,7 +126,6 @@ echo -e "  ${RED}Both changes would expose production infrastructure.${RESET}"
 echo ""
 pause
 
-# Terraform — safe baseline
 step "Terraform — Safe baseline (0 violations expected)"
 separator
 echo ""
@@ -151,7 +142,6 @@ echo ""
 ok "Baseline is clean. No violations."
 pause
 
-# Terraform — risky candidate
 step "Terraform — Risky candidate (violations expected)"
 separator
 echo ""
@@ -174,8 +164,6 @@ echo -e "           Any EC2 or ECS workload using this SG can reach any endpoint
 echo ""
 fail "PR would be blocked. Comment posted to GitHub. Report archived."
 pause
-
-# ── ARTIFACTS ─────────────────────────────────────────────────────────────────
 
 header
 step "Artifacts produced every run"
